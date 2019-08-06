@@ -47,6 +47,7 @@ ggplotConfusionMatrix <- function(m,p,r){
   #mytitle <- paste("Accuracy", percent_format()(m$overall[1]), "Kappa", percent_format()(m$overall[2]))
   mytitle <- paste("Accuracy", percent_format()(m$overall[1]),"Precision",percent_format()(p),"recall",percent_format()(r))
   #mytitle <- paste("Accuracy", percent_format()(m$overall[1]))
+  #ggplot(data = as.data.frame(m$table) , aes(x = Reference, y = Prediction))
   p <-
     ggplot(data = as.data.frame(m$table) ,
            aes(x = Reference, y = Prediction)) +
@@ -81,3 +82,22 @@ ggplotConfusionMatrix <- function(m,p,r){
 # pca=prcomp(t(data[50000:60000,]),center=TRUE)
 # to_p=data.frame(pca1=pca$rotation[,"PC1"],pca2=pca$rotation[,"PC2"],cl=label[50000:60000,])
 # ggplot(to_p,aes(pca1,pca2))+geom_point(aes(colour=factor(to_p$cl)))
+
+
+
+performance21=c();
+for (i in 20:200) {
+  TMPP_NN = neuralnetwork(data[1:50000,], label[1:50000,],optim.type = 'adam', hidden.layers = c(200,i), learn.rates = 0.001, verbose = TRUE,L2=0.01,batch.size = 45000,n.epochs=3);
+  tmp_pred = predict(TMPP_NN, newdata = data[50000:60000,]);
+  tmp_cfm=confusionMatrix(factor(as.numeric(tmp_pred$predictions)),factor(label[50000:60000,]));
+  performance21=c(performance21,tmp_cfm$overall[1]);
+} 
+
+ggplot(data.frame(accuracy=c(performance11,performance21[1:180]),nodes=c(20:199,20:199),layers=c(rep("1layer",180),rep("2layer",180))),aes(nodes=x,y=accuracy,group=layers))+geom_line(aes(colour=factor(layers)))+geom_point(aes(colour=factor(layers)))+
+    theme(legend.position = "none",
+      axis.text.x= element_text(size = 18),
+      axis.text.y= element_text(size = 18),
+      axis.title.x= element_text(size = 18,vjust = 0.1),
+      axis.title.y= element_text(size = 18,angle = 90,vjust = 1.1),
+      strip.text.x = element_text(size =18)
+    )
